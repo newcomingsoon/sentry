@@ -557,6 +557,7 @@ const Indicator = styled('div')<IndicatorProps>`
 const StyledTag = styled(Tag)`
   position: absolute;
   right: ${space(3)};
+  font-weight: 400;
 `;
 
 const Container = styled('div')`
