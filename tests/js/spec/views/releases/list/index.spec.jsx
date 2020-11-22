@@ -17,7 +17,7 @@ describe('ReleasesList', function () {
     location: {
       query: {
         query: 'derp',
-        sort: 'sessions',
+        sort: 'crash_free_sessions',
         healthStatsPeriod: '24h',
         healthStat: 'sessions',
         somethingBad: 'XXX',
@@ -106,24 +106,6 @@ describe('ReleasesList', function () {
     expect(wrapper.find('EmptyMessage').text()).toEqual(
       "There are no releases that match: 'abc'."
     );
-
-    location = {query: {sort: 'sessions', statsPeriod: '7d'}};
-    wrapper = mountWithTheme(
-      <ReleasesList {...props} location={location} />,
-      routerContext
-    );
-    expect(wrapper.find('EmptyMessage').text()).toEqual(
-      'There are no releases with data in the last 7 days.'
-    );
-
-    location = {query: {sort: 'users_24h', statsPeriod: '7d'}};
-    wrapper = mountWithTheme(
-      <ReleasesList {...props} location={location} />,
-      routerContext
-    );
-    expect(wrapper.find('EmptyMessage').text()).toEqual(
-      'There are no releases with active user data (users in the last 24 hours).'
-    );
   });
 
   it('searches for a release', function () {
@@ -149,29 +131,29 @@ describe('ReleasesList', function () {
     expect(endpointMock).toHaveBeenCalledWith(
       '/organizations/org-slug/releases/',
       expect.objectContaining({
-        query: expect.objectContaining({sort: 'sessions'}),
+        query: expect.objectContaining({sort: 'crash_free_sessions'}),
       })
     );
 
     const sortDropdown = wrapper.find('ReleaseListSortOptions').first();
     const sortOptions = sortDropdown.find('DropdownItem span');
-    const sortByDateOption = sortOptions.at(0);
+    const sortByCrashFreeUsers = sortOptions.at(0);
 
-    expect(sortOptions).toHaveLength(5);
-    expect(sortByDateOption.text()).toEqual('Date Created');
+    expect(sortOptions).toHaveLength(2);
+    expect(sortByCrashFreeUsers.text()).toEqual('Crash Free Users');
 
-    sortByDateOption.simulate('click');
+    sortByCrashFreeUsers.simulate('click');
 
     expect(router.push).toHaveBeenCalledWith({
       query: expect.objectContaining({
-        sort: 'date',
+        sort: 'crash_free_users',
       }),
     });
   });
 
   it('displays archived releases', function () {
     const archivedWrapper = mountWithTheme(
-      <ReleasesList {...props} location={{query: {display: 'archived'}}} />,
+      <ReleasesList {...props} location={{query: {status: 'archived'}}} />,
       routerContext
     );
 
@@ -184,30 +166,30 @@ describe('ReleasesList', function () {
 
     expect(archivedWrapper.find('ReleaseArchivedNotice').exists()).toBeTruthy();
 
-    const displayOptions = archivedWrapper
+    const statusOptions = archivedWrapper
       .find('ReleaseListStatusOptions')
       .first()
       .find('DropdownItem span');
-    const displayActiveOption = displayOptions.at(0);
-    const displayArchivedOption = displayOptions.at(1);
+    const statusActiveOption = statusOptions.at(0);
+    const statusArchivedOption = statusOptions.at(1);
 
-    expect(displayOptions).toHaveLength(2);
-    expect(displayActiveOption.text()).toEqual('Active');
-    expect(displayArchivedOption.text()).toEqual('Archived');
+    expect(statusOptions).toHaveLength(2);
+    expect(statusActiveOption.text()).toEqual('Active');
+    expect(statusArchivedOption.text()).toEqual('Archived');
 
-    displayActiveOption.simulate('click');
+    statusActiveOption.simulate('click');
     expect(router.push).toHaveBeenLastCalledWith({
       query: expect.objectContaining({
-        display: 'active',
+        status: 'active',
       }),
     });
 
     expect(wrapper.find('ReleaseArchivedNotice').exists()).toBeFalsy();
 
-    displayArchivedOption.simulate('click');
+    statusArchivedOption.simulate('click');
     expect(router.push).toHaveBeenLastCalledWith({
       query: expect.objectContaining({
-        display: 'archived',
+        status: 'archived',
       }),
     });
   });

@@ -8,11 +8,9 @@ import EmptyStateWarning from 'app/components/emptyStateWarning';
 import LightWeightNoProjectMessage from 'app/components/lightWeightNoProjectMessage';
 import LoadingIndicator from 'app/components/loadingIndicator';
 import GlobalSelectionHeader from 'app/components/organizations/globalSelectionHeader';
-import {getRelativeSummary} from 'app/components/organizations/timeRangeSelector/utils';
 import PageHeading from 'app/components/pageHeading';
 import Pagination from 'app/components/pagination';
 import SearchBar from 'app/components/searchBar';
-import {DEFAULT_STATS_PERIOD} from 'app/constants';
 import {t} from 'app/locale';
 import {PageContent, PageHeader} from 'app/styles/organization';
 import space from 'app/styles/space';
@@ -54,8 +52,7 @@ class ReleasesList extends AsyncView<Props, State> {
   getEndpoints(): ReturnType<AsyncView['getEndpoints']> {
     const {organization, location} = this.props;
     const {statsPeriod} = location.query;
-    const sort = this.getSort();
-    const display = this.getDisplay();
+    const status = this.getStatus();
 
     const query = {
       ...pick(location.query, [
@@ -70,24 +67,13 @@ class ReleasesList extends AsyncView<Props, State> {
       summaryStatsPeriod: statsPeriod,
       per_page: 25,
       health: 1,
-      flatten: sort === 'date' ? 0 : 1,
-      status: display === 'archived' ? ReleaseStatus.Archived : ReleaseStatus.Active,
+      flatten: 1,
+      status: status === 'archived' ? ReleaseStatus.Archived : ReleaseStatus.Active,
     };
 
-    const endpoints: ReturnType<AsyncView['getEndpoints']> = [
+    return [
       ['releasesWithHealth', `/organizations/${organization.slug}/releases/`, {query}],
     ];
-
-    // when sorting by date we fetch releases without health and then fetch health lazily
-    if (sort === 'date') {
-      endpoints.push([
-        'releasesWithoutHealth',
-        `/organizations/${organization.slug}/releases/`,
-        {query: {...query, health: 0}},
-      ]);
-    }
-
-    return endpoints;
   }
 
   onRequestSuccess({stateKey, data, jqXHR}) {
@@ -131,13 +117,13 @@ class ReleasesList extends AsyncView<Props, State> {
   getSort() {
     const {sort} = this.props.location.query;
 
-    return typeof sort === 'string' ? sort : 'date';
+    return typeof sort === 'string' ? sort : 'crash_free_sessions';
   }
 
-  getDisplay() {
-    const {display} = this.props.location.query;
+  getStatus() {
+    const {status} = this.props.location.query;
 
-    return typeof display === 'string' ? display : 'active';
+    return typeof status === 'string' ? status : 'active';
   }
 
   handleSearch = (query: string) => {
@@ -158,12 +144,12 @@ class ReleasesList extends AsyncView<Props, State> {
     });
   };
 
-  handleDisplay = (display: string) => {
+  handleStatus = (status: string) => {
     const {location, router} = this.props;
 
     router.push({
       ...location,
-      query: {...location.query, cursor: undefined, display},
+      query: {...location.query, cursor: undefined, status},
     });
   };
 
@@ -181,8 +167,7 @@ class ReleasesList extends AsyncView<Props, State> {
     const {location, organization} = this.props;
     const {statsPeriod} = location.query;
     const searchQuery = this.getQuery();
-    const activeSort = this.getSort();
-    const display = this.getDisplay();
+    const status = this.getStatus();
 
     if (searchQuery && searchQuery.length) {
       return (
@@ -192,27 +177,7 @@ class ReleasesList extends AsyncView<Props, State> {
       );
     }
 
-    if (activeSort === 'users_24h') {
-      return (
-        <EmptyStateWarning small>
-          {t('There are no releases with active user data (users in the last 24 hours).')}
-        </EmptyStateWarning>
-      );
-    }
-
-    if (activeSort !== 'date') {
-      const relativePeriod = getRelativeSummary(
-        statsPeriod || DEFAULT_STATS_PERIOD
-      ).toLowerCase();
-
-      return (
-        <EmptyStateWarning small>
-          {`${t('There are no releases with data in the')} ${relativePeriod}.`}
-        </EmptyStateWarning>
-      );
-    }
-
-    if (display === 'archived') {
+    if (status === 'archived') {
       return (
         <EmptyStateWarning small>
           {t('There are no archived releases.')}
@@ -268,23 +233,23 @@ class ReleasesList extends AsyncView<Props, State> {
             <StyledPageHeader>
               <PageHeading>{t('Releases')}</PageHeading>
               <SortAndFilterWrapper>
-                <ReleaseListStatusOptions
-                  selected={this.getDisplay()}
-                  onSelect={this.handleDisplay}
-                />
-                <ReleaseListSortOptions
-                  selected={this.getSort()}
-                  onSelect={this.handleSort}
-                />
                 <SearchBar
                   placeholder={t('Search')}
                   onSearch={this.handleSearch}
                   query={this.getQuery()}
                 />
+                <ReleaseListStatusOptions
+                  selected={this.getStatus()}
+                  onSelect={this.handleStatus}
+                />
+                <ReleaseListSortOptions
+                  selected={this.getSort()}
+                  onSelect={this.handleSort}
+                />
               </SortAndFilterWrapper>
             </StyledPageHeader>
 
-            {this.getDisplay() === 'archived' && releases?.length > 0 && (
+            {this.getStatus() === 'archived' && releases?.length > 0 && (
               <ReleaseArchivedNotice multi />
             )}
 
@@ -299,23 +264,22 @@ class ReleasesList extends AsyncView<Props, State> {
 }
 
 const StyledPageHeader = styled(PageHeader)`
-  flex-wrap: wrap;
-  margin-bottom: 0;
-  ${PageHeading} {
-    margin-bottom: ${space(2)};
-    margin-right: ${space(2)};
-  }
+  display: grid;
+  grid-gap: ${space(2)};
+  grid-template-rows: repeat(2, 1fr);
+  grid-template-columns: 1fr;
+  justify-content: flex-start;
+  margin-bottom: ${space(3)};
 `;
+
 const SortAndFilterWrapper = styled('div')`
   display: grid;
-  grid-template-columns: auto auto 1fr;
+  grid-template-columns: 1fr auto auto;
   grid-gap: ${space(2)};
-  margin-bottom: ${space(2)};
   @media (max-width: ${p => p.theme.breakpoints[0]}) {
     width: 100%;
     grid-template-columns: none;
     grid-template-rows: 1fr 1fr 1fr;
-    margin-bottom: ${space(4)};
   }
 `;
 
