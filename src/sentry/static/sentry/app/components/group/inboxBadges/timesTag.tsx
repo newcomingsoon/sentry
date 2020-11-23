@@ -1,8 +1,8 @@
 import React from 'react';
 import styled from '@emotion/styled';
 
-import {t} from 'app/locale';
 import TimeSince from 'app/components/timeSince';
+import {t} from 'app/locale';
 
 /**
  * Used in new inbox

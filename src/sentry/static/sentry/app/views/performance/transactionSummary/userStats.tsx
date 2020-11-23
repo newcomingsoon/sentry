@@ -1,24 +1,24 @@
 import React from 'react';
-import {Location} from 'history';
 import styled from '@emotion/styled';
+import {Location} from 'history';
 
+import {SectionHeading} from 'app/components/charts/styles';
 import Link from 'app/components/links/link';
 import QuestionTooltip from 'app/components/questionTooltip';
-import {SectionHeading} from 'app/components/charts/styles';
 import UserMisery from 'app/components/userMisery';
 import {t} from 'app/locale';
-import {Organization} from 'app/types';
 import space from 'app/styles/space';
+import {Organization} from 'app/types';
 import {getFieldRenderer} from 'app/utils/discover/fieldRenderers';
 import {getAggregateAlias} from 'app/utils/discover/fields';
 import {decodeScalar} from 'app/utils/queryString';
 import {getTermHelp} from 'app/views/performance/data';
-import {vitalsRouteWithQuery} from 'app/views/performance/transactionVitals/utils';
 import {
   PERCENTILE as VITAL_PERCENTILE,
   VITAL_GROUPS,
   WEB_VITAL_DETAILS,
 } from 'app/views/performance/transactionVitals/constants';
+import {vitalsRouteWithQuery} from 'app/views/performance/transactionVitals/utils';
 
 type Props = {
   totals: Record<string, number>;
@@ -84,6 +84,11 @@ function UserStats({totals, location, organization, transactionName}: Props) {
       <div>
         <SectionHeading>{t('Apdex Score')}</SectionHeading>
         <StatNumber>{apdex}</StatNumber>
+        <Link to={`/settings/${organization.slug}/performance/`}>
+          <SectionValue>
+            {threshold}ms {t('threshold')}
+          </SectionValue>
+        </Link>
       </div>
       {vitalsPassRate !== null && (
         <div>
@@ -112,8 +117,8 @@ function UserStats({totals, location, organization, transactionName}: Props) {
 const Container = styled('div')`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-row-gap: ${space(4)};
-  margin-bottom: 40px;
+  grid-row-gap: ${space(2)};
+  margin-bottom: ${space(4)};
 `;
 
 const UserMiseryContainer = styled('div')`
@@ -122,6 +127,7 @@ const UserMiseryContainer = styled('div')`
 
 const StatNumber = styled('div')`
   font-size: 32px;
+  margin-bottom: ${space(0.5)};
   color: ${p => p.theme.textColor};
 
   > div {

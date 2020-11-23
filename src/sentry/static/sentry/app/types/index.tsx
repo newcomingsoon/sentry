@@ -1,19 +1,19 @@
+import {Props as AlertProps} from 'app/components/alert';
 import {SpanEntry, TraceContextType} from 'app/components/events/interfaces/spans/types';
+import {SymbolicatorStatus} from 'app/components/events/interfaces/types';
 import {API_ACCESS_SCOPES} from 'app/constants';
-import {Field} from 'app/views/settings/components/forms/type';
 import {PlatformKey} from 'app/data/platformCategories';
 import {OrgExperiments, UserExperiments} from 'app/types/experiments';
+import {WIDGET_DISPLAY} from 'app/views/dashboards/constants';
+import {Query as DiscoverQuery} from 'app/views/discover/types';
 import {
   INSTALLED,
   NOT_INSTALLED,
   PENDING,
 } from 'app/views/organizationIntegrations/constants';
-import {WIDGET_DISPLAY} from 'app/views/dashboards/constants';
-import {Props as AlertProps} from 'app/components/alert';
-import {Query as DiscoverQuery} from 'app/views/discover/types';
-import {SymbolicatorStatus} from 'app/components/events/interfaces/types';
+import {Field} from 'app/views/settings/components/forms/type';
 
-import {StacktraceType, RawStacktrace, Mechanism} from './stacktrace';
+import {Mechanism, RawStacktrace, StacktraceType} from './stacktrace';
 
 declare global {
   interface Window {
@@ -224,6 +224,35 @@ export type Project = {
 } & AvatarProject;
 
 export type MinimalProject = Pick<Project, 'id' | 'slug'>;
+
+// Response from project_keys endpoints.
+export type ProjectKey = {
+  id: string;
+  name: string;
+  label: string;
+  public: string;
+  secret: string;
+  projectId: string;
+  isActive: boolean;
+  rateLimit: {
+    window: string;
+    count: number;
+  } | null;
+  dsn: {
+    secret: string;
+    public: string;
+    csp: string;
+    security: string;
+    minidump: string;
+    unreal: string;
+    cdn: string;
+  };
+  browserSdkVersion: string;
+  browserSdk: {
+    choices: [key: string, value: string][];
+  };
+  dateCreated: string;
+};
 
 export type Health = {
   totalUsers: number;

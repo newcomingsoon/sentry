@@ -1,10 +1,10 @@
 import React from 'react';
 import styled from '@emotion/styled';
 
-import {t} from 'app/locale';
 import Feature from 'app/components/acl/feature';
-import {IconFire} from 'app/icons';
 import Tooltip from 'app/components/tooltip';
+import {IconFire} from 'app/icons';
+import {t} from 'app/locale';
 
 const UnhandledTag = () => (
   <Feature features={['unhandled-issue-flag']}>
