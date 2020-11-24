@@ -32,8 +32,6 @@ class JiraCreateTicketActionTest(RuleTestCase):
         event = self.get_event()
         jira_rule = self.get_rule(
             data={
-                "title": "example summary",
-                "description": "example bug report",
                 "issuetype": "1",
                 "project": "10000",
                 "customfield_10200": "sad",
